@@ -89,10 +89,15 @@ function initEventListeners() {
     });
     
     // Scene 1: カラー選択
-    document.querySelectorAll('.color-block').forEach(block => {
+    const colorBlocks = document.querySelectorAll('.color-block');
+    console.log('カラーブロック数:', colorBlocks.length);
+    colorBlocks.forEach((block, index) => {
+        const color = block.dataset.color;
+        console.log(`ブロック${index}: color=${color}`);
         block.addEventListener('click', (e) => {
-            const color = e.currentTarget.dataset.color;
-            selectColor(color);
+            const clickedColor = e.currentTarget.dataset.color;
+            console.log('クリックされた色:', clickedColor);
+            selectColor(clickedColor);
         });
     });
     
@@ -200,38 +205,50 @@ function playSound(type) {
 // Scene 遷移
 // ===================================
 function changeScene(sceneNum) {
-    console.log('Scene', sceneNum, 'へ遷移');
+    console.log('=== Scene', sceneNum, 'へ遷移開始 ===');
     
     // 現在のSceneを非表示
     document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+    console.log('全Sceneを非表示にしました');
     
     // 次のSceneを表示
     const nextScene = document.getElementById('scene' + sceneNum);
+    console.log('scene' + sceneNum + '要素:', nextScene);
+    
     if (nextScene) {
         nextScene.classList.add('active');
         state.scene = sceneNum;
+        console.log('Scene', sceneNum, '表示成功');
         
         // Scene別の初期化処理
-        switch (sceneNum) {
-            case 1:
-                initScene1();
-                break;
-            case 2:
-                initScene2();
-                break;
-            case 3:
-                initScene3();
-                break;
-            case 4:
-                initScene4();
-                break;
-            case 5:
-                initScene5();
-                break;
+        try {
+            switch (sceneNum) {
+                case 1:
+                    initScene1();
+                    break;
+                case 2:
+                    console.log('Scene 2 初期化開始...');
+                    initScene2();
+                    break;
+                case 3:
+                    initScene3();
+                    break;
+                case 4:
+                    initScene4();
+                    break;
+                case 5:
+                    initScene5();
+                    break;
+            }
+        } catch (e) {
+            console.error('Scene初期化エラー:', e);
         }
+    } else {
+        console.error('Scene', sceneNum, 'が見つかりません！');
     }
     
     window.scrollTo(0, 0);
+    console.log('=== Scene遷移完了 ===');
 }
 
 // ===================================
@@ -255,21 +272,31 @@ function initScene1() {
 function selectColor(color) {
     console.log('色選択:', color);
     
-    initAudio();
-    playSound('select');
+    try {
+        initAudio();
+        playSound('select');
+    } catch (e) {
+        console.warn('Audio error:', e);
+    }
     
     state.selectedColor = color;
     state.scores.memory += 10;
     updateGauges();
     
-    // パーティクル生成
-    const canvas = document.getElementById('particleCanvas1');
-    const block = document.querySelector(`.color-block.${color}`);
-    const rect = block.getBoundingClientRect();
+    // パーティクル生成（エラーが起きても進行できるように）
+    try {
+        const canvas = document.getElementById('particleCanvas1');
+        const block = document.querySelector(`.color-block.${color}`);
+        if (canvas && block) {
+            const rect = block.getBoundingClientRect();
+            createParticles(canvas, rect.left + rect.width / 2, rect.top + rect.height / 2, COLORS[color].hex);
+        }
+    } catch (e) {
+        console.warn('Particle error:', e);
+    }
     
-    createParticles(canvas, rect.left + rect.width / 2, rect.top + rect.height / 2, COLORS[color].hex);
-    
-    // Scene 2へ遷移
+    // Scene 2へ遷移（確実に実行）
+    console.log('Scene 2へ遷移開始...');
     setTimeout(() => {
         changeScene(2);
     }, 800);
