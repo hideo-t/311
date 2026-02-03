@@ -298,7 +298,7 @@ function initScene2() {
             return;
         }
         createWaveIcon();
-    }, 1500);
+    }, 2500); // 1500 → 2500（間隔を長く）
     
     // アニメーションループ開始
     animateWaves();
@@ -309,13 +309,13 @@ function createWaveIcon() {
     const icon = document.createElement('div');
     icon.className = 'wave-icon';
     icon.textContent = WAVE_ICONS[Math.floor(Math.random() * WAVE_ICONS.length)];
-    icon.style.left = Math.random() * 80 + 10 + '%';
+    icon.style.left = Math.random() * 70 + 15 + '%';
     icon.style.bottom = '-60px';
     
     const waveData = {
         element: icon,
         y: -60,
-        speed: 2 + Math.random() * 1.5,
+        speed: 0.8 + Math.random() * 0.5, // 速度を遅く（2〜3.5 → 0.8〜1.3）
         clicked: false
     };
     
@@ -326,9 +326,9 @@ function createWaveIcon() {
     icon.addEventListener('click', () => {
         if (waveData.clicked) return;
         
-        // 共鳴ゾーンの範囲チェック
-        const zoneTop = window.innerHeight * 0.4;
-        const zoneBottom = zoneTop + 80;
+        // 共鳴ゾーンの範囲チェック（判定を広く）
+        const zoneTop = window.innerHeight * 0.35; // 0.4 → 0.35（上に広げる）
+        const zoneBottom = zoneTop + 150; // 80 → 150（下に広げる）
         const iconTop = window.innerHeight - waveData.y - 60;
         
         if (iconTop >= zoneTop && iconTop <= zoneBottom) {
