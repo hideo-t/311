@@ -2,47 +2,395 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>3.11 メモリークエスト：COLOR & VOICE（#9）</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.11 メモリークエスト：COLOR & VOICE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .scene {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .scene.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scene 0: タイトル */
+        .title-screen {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .start-button {
+            padding: 20px 60px;
+            font-size: 24px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid white;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-button:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Scene 1: カラー選択 */
+        .instruction {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .color-grid {
+            position: relative;
+            width: 90vw;
+            max-width: 500px;
+            aspect-ratio: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .color-block {
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .color-block:active {
+            transform: scale(0.95);
+        }
+
+        .color-block.yellow { background: #FFD700; }
+        .color-block.green { background: #7FFF00; }
+        .color-block.cyan { background: #00FFFF; }
+        .color-block.purple { background: #DA70D6; }
+
+        .cloud-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            box-shadow: 0 0 30px rgba(255,255,255,0.8);
+        }
+
+        /* Scene 2: 波形マッチ */
+        .game-area {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .resonance-zone {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 150px;
+            border: 4px dashed rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .wave-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100vh;
+        }
+
+        .wave-icon {
+            position: absolute;
+            font-size: 64px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease;
+        }
+
+        .wave-icon:active {
+            transform: scale(1.3);
+        }
+
+        .counter {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+
+        /* Scene 3: 出演者 */
+        .artist-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .artist-card {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 16px;
+            padding: 20px;
+            min-width: 140px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: cardAppear 0.5s ease;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .artist-card:active {
+            transform: scale(1.05);
+        }
+
+        .artist-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .artist-comment {
+            font-size: 14px;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .artist-card.revealed .artist-comment {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        .next-button {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            border: 3px solid white;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .next-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        /* Scene 4: イベント情報 */
+        .event-container {
+            background: rgba(0,0,0,0.5);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .event-emblem {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #00FFFF, #DA70D6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            border: 4px solid white;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .event-details {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .detail-item {
+            padding: 10px 0;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .highlight {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Scene 5: 結果 */
+        .result-container {
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .result-title {
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+
+        .color-display {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 50%;
+            border: 4px solid white;
+        }
+
+        .color-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .result-type {
+            font-size: 24px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+        }
+
+        .code-display {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid white;
+            border-radius: 12px;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .primary {
+            background: rgba(255,255,255,0.3);
+            border: 2px solid white;
+            color: white;
+        }
+
+        .secondary {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid white;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
-    <!-- スコアゲージ（非表示）
-    <div class="score-gauges" id="scoreGauges">
-        <div class="gauge">
-            <div class="gauge-label">MEMORY</div>
-            <div class="gauge-bar">
-                <div class="gauge-fill memory" id="memoryGauge"></div>
-            </div>
-        </div>
-        <div class="gauge">
-            <div class="gauge-label">HOPE</div>
-            <div class="gauge-bar">
-                <div class="gauge-fill hope" id="hopeGauge"></div>
-            </div>
-        </div>
-        <div class="gauge">
-            <div class="gauge-label">LINK</div>
-            <div class="gauge-bar">
-                <div class="gauge-fill link" id="linkGauge"></div>
-            </div>
-        </div>
-    </div>
-    -->
-
     <!-- Scene 0: タイトル -->
     <div class="scene active" id="scene0">
-        <div class="title-container">
-            <h1 class="main-title">3.11 メモリークエスト</h1>
-            <h2 class="sub-title">COLOR & VOICE（#9）</h2>
-            <p class="tagline">― 色と声で、あの日をつなぐ ―</p>
-            <button class="start-button" id="startButton">START</button>
-            <div class="event-info-small">
-                <span class="info-badge">入場無料</span>
-                <span class="info-badge">全席自由</span>
-            </div>
+        <div class="title-screen">
+            <h1>🎨 3.11 メモリークエスト</h1>
+            <p class="subtitle">COLOR & VOICE（#9）</p>
+            <p class="subtitle">― 色と声で、あの日をつなぐ ―</p>
+            <button class="start-button" onclick="goToScene(1)">START</button>
         </div>
     </div>
 
@@ -50,97 +398,234 @@
     <div class="scene" id="scene1">
         <div class="instruction">今の気持ちに近い色を選んでください</div>
         <div class="color-grid">
-            <div class="color-block yellow" data-color="yellow"></div>
-            <div class="color-block green" data-color="green"></div>
-            <div class="color-block cyan" data-color="cyan"></div>
-            <div class="color-block purple" data-color="purple"></div>
-            <div class="cloud-center">
-                <div class="cloud"></div>
-                <div class="cloud cloud2"></div>
-                <div class="cloud cloud3"></div>
-            </div>
+            <div class="color-block yellow" onclick="selectColor('yellow')">🌟</div>
+            <div class="color-block green" onclick="selectColor('green')">🌿</div>
+            <div class="color-block cyan" onclick="selectColor('cyan')">💧</div>
+            <div class="color-block purple" onclick="selectColor('purple')">🦋</div>
+            <div class="cloud-center"></div>
         </div>
-        <canvas id="particleCanvas1" class="particle-canvas"></canvas>
     </div>
 
     <!-- Scene 2: 波形マッチ -->
     <div class="scene" id="scene2">
-        <div class="instruction">共鳴ゾーンでタップしよう</div>
-        <div class="resonance-zone" id="resonanceZone">
-            <div class="zone-label">共鳴ゾーン</div>
+        <div class="instruction">共鳴ゾーンでタップ！</div>
+        <div class="game-area">
+            <div class="resonance-zone">共鳴ゾーン</div>
+            <div class="wave-container" id="waveContainer"></div>
+            <div class="counter" id="counter">0 / 5</div>
         </div>
-        <div class="wave-container" id="waveContainer"></div>
-        <div class="resonance-counter">
-            共鳴: <span id="resonanceCount">0</span> / 5
-        </div>
-        <canvas id="particleCanvas2" class="particle-canvas"></canvas>
     </div>
 
-    <!-- Scene 3: 出演者発見 -->
+    <!-- Scene 3: 出演者 -->
     <div class="scene" id="scene3">
         <div class="instruction">共鳴した声が見えてきた…</div>
         <div class="artist-cards" id="artistCards"></div>
-        <button class="next-button" id="scene3NextButton">次へ →</button>
+        <button class="next-button" onclick="goToScene(4)">次へ →</button>
     </div>
 
-    <!-- Scene 4: 共鳴マップ -->
+    <!-- Scene 4: イベント情報 -->
     <div class="scene" id="scene4">
         <div class="instruction">すべての色と声が #9 へ…</div>
-        <div class="map-container">
-            <div class="venue-emblem" id="venueEmblem">
-                <div class="emblem-circle">
-                    <div class="emblem-text">#9</div>
-                </div>
+        <div class="event-container">
+            <div class="event-emblem">#9</div>
+            <h2>EVENT SPACE Koriyama #9</h2>
+            <div class="event-details">
+                <div class="detail-item">📅 3月8日（日）</div>
+                <div class="detail-item">🕐 開場11:40 / 開演12:00</div>
+                <div class="detail-item">📍 郡山市大町1-4-15（第2増子ビル地下）</div>
+                <div class="detail-item">📞 024-973-5242</div>
+                <div class="detail-item highlight">✨ 入場無料（全席自由）</div>
+                <div class="detail-item">🥤 ドリンク代：大人400円</div>
+                <div class="detail-item">🎁 来場プレゼント：先着150名（高校生以下）</div>
             </div>
-            <canvas id="mapCanvas" class="map-canvas"></canvas>
+            <button class="next-button" onclick="goToScene(5)">FINISH</button>
         </div>
-        <div class="event-details" id="eventDetails">
-            <h3>EVENT SPACE Koriyama #9</h3>
-            <div class="detail-item">📅 3月8日（日）</div>
-            <div class="detail-item">🕐 開場11:40 / 開演12:00</div>
-            <div class="detail-item">📍 郡山市大町1-4-15（第2増子ビル地下）</div>
-            <div class="detail-item">📞 024-973-5242</div>
-            <div class="detail-item highlight">✨ 入場無料（全席自由）</div>
-            <div class="detail-item">🥤 ドリンク代：大人の方を対象に400円</div>
-            <div class="detail-item">🎁 来場プレゼント：先着150名（高校生以下）</div>
-        </div>
-        <button class="next-button" id="scene4NextButton">FINISH</button>
     </div>
 
-    <!-- Scene 5: 結果画面 -->
+    <!-- Scene 5: 結果 -->
     <div class="scene" id="scene5">
         <div class="result-container">
-            <h2 class="result-title">あなたの共鳴</h2>
-            <div class="result-color" id="resultColor">
-                <div class="color-display" id="colorDisplay"></div>
-                <div class="color-name" id="colorName"></div>
-            </div>
+            <div class="result-title">🎉 あなたの共鳴</div>
+            <div class="color-display" id="colorDisplay"></div>
+            <div class="color-name" id="colorName"></div>
             <div class="result-type" id="resultType"></div>
-            <div class="result-code">
-                <div class="code-label">合言葉コード</div>
-                <div class="code-display" id="codeDisplay"></div>
+            <div class="code-display" id="codeDisplay"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" onclick="location.reload()">もう一度</button>
+                <button class="modal-btn secondary" onclick="shareResult()">シェア</button>
             </div>
-            <!--
-            <div class="final-scores">
-                <div class="final-score-item">
-                    <span class="score-label">MEMORY</span>
-                    <span class="score-value" id="finalMemory">0</span>
-                </div>
-                <div class="final-score-item">
-                    <span class="score-label">HOPE</span>
-                    <span class="score-value" id="finalHope">0</span>
-                </div>
-                <div class="final-score-item">
-                    <span class="score-label">LINK</span>
-                    <span class="score-value" id="finalLink">0</span>
-                </div>
-            </div>
-            -->
-            <button class="share-button" id="shareButton">📤 シェアする</button>
-            <button class="restart-button" id="restartButton">🔄 もう一度プレイ</button>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script>
+        // ゲーム状態
+        let selectedColor = null;
+        let resonanceCount = 0;
+        let waveIcons = [];
+        let waveInterval = null;
+
+        // 色データ
+        const COLORS = {
+            yellow: { hex: '#FFD700', name: 'YELLOW', type: 'HOPE RUNNER' },
+            green: { hex: '#7FFF00', name: 'GREEN', type: 'HARMONY MAKER' },
+            cyan: { hex: '#00FFFF', name: 'CYAN', type: 'MEMORY CARRIER' },
+            purple: { hex: '#DA70D6', name: 'PURPLE', type: 'VOICE KEEPER' }
+        };
+
+        // 出演者リスト
+        const ARTISTS = [
+            'テルG', '高橋迷人', '加藤漢太', '岡田純子', '橋本妙子',
+            '清水兼一', '伊藤和哉', 'マヒロスターズフラチーム', '大槻いくを',
+            '原田雪見', 'KUSANO', 'アベマンセイ', '相良裕成', '"~ing',
+            'Lumiere', 'mone', '大督', '芦原会館',
+            '福島スポーツアカデミー', 'STUDIO DANCE HEAD', '空先拓海'
+        ];
+
+        // Scene遷移
+        function goToScene(sceneNum) {
+            console.log('Scene', sceneNum, 'へ遷移');
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.getElementById('scene' + sceneNum).classList.add('active');
+
+            // Scene別初期化
+            if (sceneNum === 2) initScene2();
+            if (sceneNum === 3) initScene3();
+            if (sceneNum === 5) initScene5();
+        }
+
+        // 色選択
+        function selectColor(color) {
+            console.log('色選択:', color);
+            selectedColor = color;
+            
+            // 背景色変更
+            document.body.style.background = `linear-gradient(135deg, ${COLORS[color].hex}44, #764ba2)`;
+            
+            setTimeout(() => goToScene(2), 500);
+        }
+
+        // Scene 2: 波形マッチ初期化
+        function initScene2() {
+            resonanceCount = 0;
+            document.getElementById('counter').textContent = '0 / 5';
+            
+            // 波形生成開始
+            waveInterval = setInterval(() => {
+                if (resonanceCount >= 5) {
+                    clearInterval(waveInterval);
+                    setTimeout(() => goToScene(3), 1000);
+                    return;
+                }
+                createWave();
+            }, 2500);
+        }
+
+        // 波形生成
+        function createWave() {
+            const container = document.getElementById('waveContainer');
+            const icon = document.createElement('div');
+            icon.className = 'wave-icon';
+            icon.textContent = ['🎤', '💃', '🎸', '👦'][Math.floor(Math.random() * 4)];
+            icon.style.left = (Math.random() * 70 + 15) + '%';
+            icon.style.bottom = '-80px';
+            
+            let y = -80;
+            const speed = 0.8;
+            let clicked = false;
+            
+            container.appendChild(icon);
+            
+            // タップイベント
+            icon.onclick = function() {
+                if (clicked) return;
+                
+                const zoneTop = window.innerHeight * 0.35;
+                const zoneBottom = zoneTop + 150;
+                const iconTop = window.innerHeight - y - 80;
+                
+                if (iconTop >= zoneTop && iconTop <= zoneBottom) {
+                    clicked = true;
+                    icon.style.opacity = '0';
+                    resonanceCount++;
+                    document.getElementById('counter').textContent = resonanceCount + ' / 5';
+                    
+                    setTimeout(() => icon.remove(), 300);
+                }
+            };
+            
+            // アニメーション
+            function animate() {
+                if (clicked || !document.getElementById('scene2').classList.contains('active')) {
+                    icon.remove();
+                    return;
+                }
+                
+                y += speed;
+                icon.style.bottom = y + 'px';
+                
+                if (y > window.innerHeight + 80) {
+                    icon.remove();
+                    return;
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // Scene 3: 出演者初期化
+        function initScene3() {
+            const container = document.getElementById('artistCards');
+            container.innerHTML = '';
+            
+            const shuffled = [...ARTISTS].sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            
+            selected.forEach((name, i) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = 'artist-card';
+                    card.innerHTML = `
+                        <div class="artist-name">${name}</div>
+                        <div class="artist-comment">今日の音の色：${COLORS[selectedColor].name}</div>
+                    `;
+                    card.onclick = function() {
+                        this.classList.toggle('revealed');
+                    };
+                    container.appendChild(card);
+                }, i * 300);
+            });
+        }
+
+        // Scene 5: 結果初期化
+        function initScene5() {
+            const colorData = COLORS[selectedColor];
+            
+            document.getElementById('colorDisplay').style.background = colorData.hex;
+            document.getElementById('colorName').textContent = colorData.name;
+            document.getElementById('resultType').textContent = colorData.type;
+            
+            const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            document.getElementById('codeDisplay').textContent = 
+                `311-KORIYAMA-${colorData.name}-${random}`;
+        }
+
+        // シェア
+        function shareResult() {
+            const colorData = COLORS[selectedColor];
+            const code = document.getElementById('codeDisplay').textContent;
+            const text = `3.11メモリークエスト\n私の色：${colorData.name}\nTYPE：${colorData.type}\n合言葉：${code}\n3月8日(日) Koriyama #9`;
+            
+            if (navigator.share) {
+                navigator.share({ text: text });
+            } else {
+                alert('メッセージをコピーしました！\n\n' + text);
+                navigator.clipboard.writeText(text);
+            }
+        }
+
+        console.log('🎨 ゲーム起動');
+    </script>
 </body>
 </html>
