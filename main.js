@@ -252,14 +252,12 @@ function changeScene(sceneNum) {
 }
 
 // ===================================
-// スコアゲージ更新
+// スコアゲージ更新（非表示のため何もしない）
 // ===================================
 function updateGauges() {
-    const clamp = (val) => Math.min(100, Math.max(0, val));
-    
-    document.getElementById('memoryGauge').style.width = clamp(state.scores.memory) + '%';
-    document.getElementById('hopeGauge').style.width = clamp(state.scores.hope) + '%';
-    document.getElementById('linkGauge').style.width = clamp(state.scores.link) + '%';
+    // スコアゲージは非表示にしたので何もしない
+    // エラー防止のため関数は残す
+    return;
 }
 
 // ===================================
